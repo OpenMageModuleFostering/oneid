@@ -29,9 +29,13 @@
         <reference name="head">
             <action method="addCss"><name>css/oneid.css</name></action>
         </reference>
-        <remove name="customer_form_login"/>
+
         <reference name="content">
-            <block type="customer/form_login" name="oneid_form_login" template="oneid/form/login.phtml"/>
+            <reference name="customer_form_login">
+                <reference name="form.additional.info">
+                    <block type="OneID/signin" name="oneid_signin_button" template="oneid/oneid/signin.phtml"></block>
+                </reference>
+            </reference>
         </reference>
     </customer_account_login>
     
