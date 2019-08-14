@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+
+<layout version="0.1.0">
+    <default>
+        <reference name="head">
+            <block type="core/template" name="oneid_head_ext" template="oneid/block/page/html/head.phtml" />
+        </reference>
+        <reference name="footer">
+            <block type="core/template" name="oneid_footer_ext" template="oneid/block/page/html/footer.phtml" />
+        </reference>
+    </default>
+    
+    
+    <oneid_account_login translate="label">
+        <label>Customer Account Login Form</label>
+        <!-- Mage_Customer -->
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="customer/form_login" name="customer_form_login" template="oneid/form/traditional_login.phtml"/>
+        </reference>
+    </oneid_account_login>
+    
+    <customer_account_login translate="label">
+        <reference name="head">
+            <action method="addCss"><name>css/oneid.css</name></action>
+        </reference>
+
+        <reference name="content">
+
+            <reference name="customer_form_login">
+                <block type="OneID/signin" name="oneid_signin_button" template="oneid/oneid/signin.phtml"></block>
+                <reference name="form.additional.info">
+                    <block type="OneID/signin" name="oneid_signin_button" template="oneid/oneid/signin.phtml"></block>
+                </reference>
+            </reference>
+        </reference>
+    </customer_account_login>
+    
+    <checkout_cart_index translate="label">
+        <reference name="head">
+            <action method="addCss"><name>css/oneid.css</name></action>
+        </reference>
+        
+        <reference name="checkout.cart.top_methods">
+            <reference name="checkout.cart.methods.onepage">
+                <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+            </reference>
+        </reference>
+        
+        
+        <reference name="checkout.cart.methods.onepage.bottom">
+            <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+        </reference>
+        <reference name="checkout.cart.methods.onepage.top">
+            <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+        </reference>
+    </checkout_cart_index>
+    
+    <customer_account_index translate="label">
+      <reference name="my.account.wrapper">
+        <reference name="customer_account_dashboard">
+          <action method="setTemplate">
+            <template>oneid/customer/account/dashboard.phtml</template>
+          </action>
+        </reference>
+      </reference>
+    </customer_account_index>
+    
+    
+    <customer_account_edit translate="label">
+        <reference name="my.account.wrapper">
+            <reference name="customer_edit">
+                <action method="setTemplate"><template>oneid/customer/form/edit.phtml</template></action>
+            </reference>
+        </reference>
+    </customer_account_edit>
+    
+<!--    <customer_account_forgotpassword>
+      <reference name="head">
+          <action method="addCss"><name>css/oneid.css</name></action>
+      </reference>
+       <reference name="content">
+            <reference name="forgotPassword">
+              <action method="setTemplate"><template>oneid/customer/form/forgotpassword.phtml</template></action>
+            </reference>
+        </reference>
+    </customer_account_forgotpassword>-->
+    
+    <checkout_onepage_index translate="label">
+      <reference name="head">
+          <action method="addCss"><name>css/oneid.css</name></action>
+      </reference>
+      <reference name="content">
+        <block type="core/template" name="oneid_onepage" template="oneid/checkout/oneid_onepage.phtml"></block>
+      </reference>
+    </checkout_onepage_index>
+    
+    <checkout_onepage_review>
+        <reference name="checkout.onepage.review.button">
+            <action method="setTemplate">
+                <template>oneid/checkout/onepage/review/button.phtml</template>
+            </action>
+        </reference>
+    </checkout_onepage_review>
+    
+    <checkout_onepage_success translate="label">
+      <reference name="head">
+          <action method="addCss"><name>css/oneid.css</name></action>
+      </reference>
+        <reference name="content">
+          <reference name="checkout.success">
+              <block type="core/template" name="oneid_provision" template="oneid/checkout/success/oneid_create.phtml"></block>
+          </reference>
+        </reference>
+    </checkout_onepage_success>
+    
+</layout>

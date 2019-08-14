@@ -1,0 +1,6 @@
+<div id="oneid-login-form-button" class="oneid-only oneid-login-container" style="float: left; margin-top: -7px; margin-right: 5px; display: block;" ></div>
+<script type="text/javascript">
+    OneIdExtern.registerApiReadyFunction(function(){
+        OneId.loginButton(OneId.$("#oneid-login-form-button"), { "challenge" : <?php echo $this->helper("OneID")->getLoginCHALJ() ?> });
+    });
+</script>

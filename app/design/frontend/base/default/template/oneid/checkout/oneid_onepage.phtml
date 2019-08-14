@@ -1,0 +1,482 @@
+<?php
+$args = Mage::app()->getRequest()->getParams();
+$_quote = Mage::getModel('checkout/cart')->getQuote();
+?>
+
+<script type="text/javascript">
+    var automateFormFill = <?php 
+        if (array_key_exists("autoFill", $args)){
+            echo 1;
+        } 
+        else { 
+            echo 0;
+        } 
+        ?>;
+    
+            var recoverFromFailedOneidCheckout = function(){
+            OneId.$("#opc-login").show();
+            OneId.$("#opc-billing").show();
+            OneId.$("#opc-shipping").show();
+            OneId.$("#opc-payment").show();
+            OneId.$("#oneid-checkout-please-wait").hide();
+
+
+            OneId.$("#login\\:guest").click();
+            OneId.$("#p_method_ccsave").click();
+
+            OneId.$("#register-xcustomer-password").show();
+            OneId.$("#billing\\:customer_password").removeClass("required-entry");
+            OneId.$("#billing\\:confirm_password").removeClass("required-entry");          
+            OneId.$("#checkout-step-review").hide();
+        }
+    
+    // page level variables.
+    var oneIDSaveAttributes = function() {
+            var data = {};
+            // Elements that were missing from oneID will have this CSS class attached.
+            var missing_fields = $$(".oneid-attr-missing");
+        
+        
+            if (missing_fields.length) {
+                for (var i=0; i < missing_fields.length; i++) {
+                    var missing_field = missing_fields[i];
+                    var oneidAttr = null;
+                    var missing_field_id = missing_field.id;
+                    // Need to go through the JSON blobs defining the forms to get
+                    // the form_id -> oneid_attribute mapping.
+                    if (billingAddressPostData["formData"][missing_field_id]) {
+                        oneidAttr = billingAddressPostData["formData"][missing_field_id]["oneid_attribute"];  
+                    }
+                    else if (shippingAddressPostData["formData"][missing_field_id]){
+                        oneidAttr = shippingAddressPostData["formData"][missing_field_id]["oneid_attribute"];  
+                    }
+                    else if (paymentPostData["formData"][missing_field_id]) {
+                        oneidAttr = paymentPostData["formData"][missing_field_id]["oneid_attribute"];
+                    }
+                
+                    if (oneidAttr) {
+                        data[oneidAttr] = missing_field.value;
+                    }
+                
+                }
+            
+                // Call the external setuserattributes, which proxies to server.
+                OneId.setUserAttributes(data, function(status){
+                    oneidAuthorizePurchase(); 
+                });
+            }
+            else {
+                oneidAuthorizePurchase(); 
+            }
+        };
+        var oneidAuthorizePurchase = function() {
+            OneId.isUserLoggedIn(function(isLoggedIn){
+                if (isLoggedIn){
+                    OneId.authSecuredTransaction({'auth_message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
+                        'amount' : '<?php echo $_quote->getGrandTotal() ?>',
+                        'challenge' : <?php echo Mage::helper("OneID")->getChalj('secureTransaction', $_quote) ?>
+                    }, 
+                    function(data) {
+                        if (!data) {
+                            return;
+                        }
+                        if (!OneId.$("#oneIdPurchaseAuthData").length){
+                            OneId.$('<input id="oneIDPurchaseAuthData" type="hidden" name="oneIDPurchaseAuthData" />').appendTo("#co-payment-form");
+                        }
+                        
+                        
+                        $("oneIDPurchaseAuthData").value = OneIdJSON.stringify(data);
+                        review.save();
+                    });
+                }
+            
+                else{
+                    review.save();
+                }
+            });
+        };
+        
+    
+    
+    OneIdExtern.registerApiReadyFunction(function(){
+        // insert buttons
+        var loginCtr = '<div class="oneid-only"><div id="oneid-checkout-login-form" class="oneid-only oneid-login-container" style="" ></div></div>';
+        OneId.$(loginCtr).insertAfter("#checkout-step-login .col-2 .buttons-set .button");
+        
+        // billing
+        var billingCtr = '<div name="AutoFill with OneID" class="oneid-only oneid-formfill-billing" style="float:right; margin-top:-7px; margin-right:5px;"></div>';
+        OneId.$(billingCtr).insertAfter("#co-billing-form .button");
+        
+                // billing
+        var billingCtr = '<div name="AutoFill with OneID" class="oneid-only oneid-formfill-shipping" style="float:right; margin-top:-7px; margin-right:5px;"></div>';
+        OneId.$(billingCtr).insertAfter("#co-shipping-form .button");
+        
+        //payment
+        var paymentCtr = '<div name="AutoFill with OneID" class="oneid-only oneid-formfill-payment" style="float:right; margin-top:-7px; margin-right:5px;"></div>'
+        OneId.$(paymentCtr).insertAfter("#checkout-step-payment .button");
+        
+
+        
+        // attach the OneId login button
+        OneId.loginButton(OneId.$("#oneid-checkout-login-form"), { "challenge" : <?php echo $this->helper("OneID")->getCheckoutLoginCHALJ() ?> });
+        
+            
+        var postPaymentFillFunction = function() { 
+            payment.resetLoadWaiting();
+          
+            if (automateFormFill) {
+                // If we're auto form filling, need to show all the other accordian pieces.
+                payment.onSave = function(t){
+                    payment.nextStep(t);
+                    OneId.$("#oneid-checkout-please-wait").hide();
+                    OneId.$("#opc-login").addClass("allow").show();
+                    OneId.$("#opc-billing").addClass("allow").show();
+                    OneId.$("#opc-shipping").addClass("allow").show();
+                    OneId.$("#opc-payment").addClass("allow").show();
+                }
+            }
+          
+            if (OneId.$("#ccsave_cc_cid,#authorizenet_cc_cid").length){
+                OneId.$("#oneid-checkout-please-wait").hide();
+                OneId.$("#opc-login").addClass("allow").show();
+                OneId.$("#opc-billing").addClass("allow").show();
+                OneId.$("#opc-shipping").addClass("allow").show();
+                OneId.$("#opc-payment").addClass("allow").show();
+                // We don't autofill the CVV, so lets focus on it
+                OneId.$("#ccsave_cc_cid").focus();
+            }
+            else{
+                payment.save();
+            }
+          
+        };
+      
+        var startPaymentsFormFill = function(){
+            var attr = "<?php echo $this->helper('OneID')->getCheckoutAttr() ?>";
+            paymentPostData.additional_attrs = attr;
+            OneIdForm.fill(paymentPostData);
+        }
+      
+        var paymentMissingFields = function(missing_fields) {
+            $("opc-payment").show();
+            $("checkout-step-payment").show();
+        }
+      
+        var paymentPostData = { 
+            "formData" : {
+                "ccsave_cc_owner" : {
+                    "oneid_attribute" : "payment[cc_name_on_card]",
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_cc_type" : {
+                    "oneid_attribute" : "payment[cc_type]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_cc_number" : {
+                    "oneid_attribute" : "payment[cc_number]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_expiration" : {
+                    "oneid_attribute" : "payment[cc_exp_mo]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_expiration_yr" : {
+                    "oneid_attribute" : "payment[cc_exp_yr]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "selector_type" : "base",
+                    "format" : ""
+                }
+            }
+        };  
+        
+        OneId.accuFillButton(OneId.$(".oneid-formfill-payment"), paymentPostData, "", function(completed){
+            if (!completed && automateFormFill){
+                recoverFromFailedOneidCheckout();
+            }
+            if (completed){
+                postPaymentFillFunction();
+            }
+        });
+  
+        var billingAddressFillSuccess = function() { 
+            OneId.$("#p_method_ccsave").click();
+            OneId.$("#payment_form_ccsave").show();
+            billing.save();
+            
+            if (OneId.$("#opc-shipping_methods").length){
+                recoverFromFailedOneidCheckout();
+            }
+            
+        };
+      
+        function escapeSelector(str){
+            if( str){
+                return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1')
+            }
+            else  {
+                return str;
+            }
+        }
+      
+        var isFormFilledOut = function(formData){
+            for(key in formData){
+                var selector = OneId.$("#"+escapeSelector(key));
+                if (selector.length && !selector.val() && formData[key].required){
+                    return false;
+                }
+            }
+            
+            return true;
+        };
+      
+        // Need this function for auto-filling.
+        var startBillingAddressFormFill = function() {
+            var attr = "<?php echo $this->helper('OneID')->getCheckoutAttr() ?>";
+        
+            billingAddressPostData.additional_attrs = attr;
+        
+            OneIdForm.fill(billingAddressPostData, "", false, function(completed){
+                
+                var filledOut = isFormFilledOut(billingAddressPostData.formData);
+                
+                if (automateFormFill && (!completed || !filledOut)){
+                    recoverFromFailedOneidCheckout();
+                    checkout.gotoSection("billing");
+                }
+                else {
+                    if (completed){
+                        billingAddressFillSuccess();
+                    }
+                }
+            });
+        }
+      
+
+      
+        var billingAddressMissingFields = function(missing_fields) {
+            if (automateFormFill){
+                recoverFromFailedOneidCheckout();
+            }
+            checkout.gotoSection("billing");
+            $("opc-billing").show();
+          
+        };
+    
+        var billingAddressPostData = { 
+            "formData" : {
+                "billing:firstname" : {
+                    "oneid_attribute" : ["personal_info[first_name]"]
+                },
+                "billing:lastname" : {
+                    "oneid_attribute" : ["personal_info[last_name]"]
+                  
+                },
+                "billing:email" :{
+                    "oneid_attribute" : ["personal_info[email]"]
+                },
+                "billing:street1" :{
+                    "oneid_attribute" : "address[billing][street]" 
+                },
+                "billing:street2" :{
+                    "oneid_attribute" : "address[billing][street2]", 
+                    "required" : false
+                },
+                "billing:telephone" :{
+                    "oneid_attribute" : "address[billing][phone]" 
+                },
+                "billing:region_id" :{
+                    "oneid_attribute" : "address[billing][state]"
+                },
+                "billing:city" : {
+                    "oneid_attribute" : "address[billing][city]" 
+                },
+                "billing:postcode" : {
+                    "oneid_attribute" : "address[billing][zip]" 
+                }
+            }
+        };
+        
+        var oneidBillingNextStep = function() {
+            OneId.isUserEnabled( function (isEnabled) {
+                if (isEnabled) {
+                    billingAddressFillSuccess();
+                    $("opc-payment").show();
+                }
+                else {
+                    billing.save();
+                }
+            });
+        };
+        
+        OneId.accuFillButton(OneId.$(".oneid-formfill-billing"), billingAddressPostData, "", function(completed){
+            if (!completed && automateFormFill){
+                recoverFromFailedOneidCheckout();
+            }
+            if (completed){
+                billingAddressFillSuccess();
+            }
+        });
+        
+
+
+        //<!-- shipping.phtml -->
+
+        var postShippingAddressFunction = function() { 
+            shipping.save(); 
+           
+            if (automateFormFill) {
+                
+                OneId.$("#opc-shipping_methods").show();
+                
+                
+                }
+        };
+       
+        var shippingAddressMissingFields = function(missing_fields) {
+            if (automateFormFill){
+                recoverFromFailedOneidCheckout();
+            }
+            checkout.gotoSection("shipping");
+            $("opc-shipping").show();
+        }
+       
+        var shippingAddressPostData = { 
+            "formData" : {
+                "shipping:firstname" : {
+                    "oneid_attribute" : "personal_info[first_name]"
+                },
+                "shipping:lastname" : {
+                    "oneid_attribute" : "personal_info[last_name]"
+                },
+                "shipping:street1" :{
+                    "oneid_attribute" : "address[shipping][street]" 
+                },
+                "shipping:street2" :{
+                    "oneid_attribute" : "address[shipping][street2]",
+                    "required": false
+                },
+                "shipping:telephone" :{
+                    "oneid_attribute" : "address[shipping][phone]"
+                },
+                "shipping:region_id" :{
+                    "oneid_attribute" : "address[shipping][state]"
+                },
+                "shipping:city" : {
+                    "oneid_attribute" : "address[shipping][city]"
+                },
+                "shipping:postcode" : {
+                    "oneid_attribute" : "address[shipping][zip]"
+                }
+            }
+        };  
+        
+        var startShippingAddressFormFill = function() {
+            var attr = "<?php echo $this->helper('OneID')->getCheckoutAttr() ?>";
+            OneIdForm.fill(shippingAddressPostData);
+        };
+        
+
+        OneId.accuFillButton(OneId.$(".oneid-formfill-shipping"), shippingAddressPostData, "", function(completed){
+            if (!completed && automateFormFill){
+                recoverFromFailedOneidCheckout();
+            }
+            if (completed){
+                postShippingAddressFunction();
+            }
+        });
+
+        OneId.isUserEnabled(function(isEnabled){
+            if (isEnabled){
+                OneId.$(".oneid-only").show();
+                
+                if (automateFormFill){
+                    OneId.$("#opc-login").hide();
+                    OneId.$("#opc-billing").hide();
+                    OneId.$("#opc-shipping").hide();
+                    OneId.$("#opc-payment").hide();
+                    OneId.$("#oneid-checkout-please-wait").show();
+
+
+                    OneId.$("#login\\:guest").click();
+                    OneId.$("#p_method_ccsave").click();
+
+                    OneId.$("#register-xcustomer-password").hide();
+                    OneId.$("#billing\\:customer_password").removeClass("required-entry");
+                    OneId.$("#billing\\:confirm_password").removeClass("required-entry");          
+                    OneId.$("#checkout-step-review").show();
+                    
+                    
+                    shippingMethod.onSave = function(transport){
+                        if (transport && transport.responseText){
+                            try{
+                                response = eval('(' + transport.responseText + ')');
+                            }
+                            catch (e) {
+                                response = {};
+                            }
+                        }
+
+                        if (response.error) {
+                            alert(response.message);
+                            return false;
+                        }
+
+                        if (response.update_section) {
+                            $('checkout-'+response.update_section.name+'-load').update(response.update_section.html);
+                        }
+
+                        payment.initWhatIsCvvListeners();
+                       
+                       
+                        OneIdForm.fill(paymentPostData, "", function(completed){
+                        });
+                       
+                        if (response.goto_section) {
+                            checkout.gotoSection(response.goto_section);
+                            checkout.reloadProgressBlock();
+                            return;
+                        }
+
+                        if (response.payment_methods_html) {
+                            $('checkout-payment-method-load').update(response.payment_methods_html);
+                        }
+
+                        checkout.setShippingMethod();
+                    }
+                    
+                    var autoFillFormData = OneId.$.extend({}, billingAddressPostData.formData, paymentPostData.formData);
+                    var autoFillMap = {
+                        "formData" : autoFillFormData
+                    };
+                    
+                    OneIdForm.fill(autoFillMap, "", false, function(completed){
+                        
+                        recoverFromFailedOneidCheckout();
+                        
+                        var filledOut = isFormFilledOut(billingAddressPostData.formData);
+                        if (automateFormFill && (!completed || !filledOut)){
+                            checkout.gotoSection("billing");
+                        }
+                        else {
+                            if (completed){             
+                                billingAddressFillSuccess();
+                            }
+                        }
+                    });
+                   
+                }
+            }
+        });
+      
+        
+    });
+</script>
