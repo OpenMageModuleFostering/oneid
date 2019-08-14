@@ -1,0 +1,55 @@
+.oneid-auto-filled {
+    
+}
+
+/*.oneid-attr-missing {
+    background: url("../images/bkg_input-failed.gif") repeat-x scroll 0 0 #FFF7F5 !important;
+    border: 1px solid #F47D4E !important;
+}*/
+
+.cart .title-buttons .checkout-types {
+    text-align: center;
+}
+
+.cart .totals .checkout-types {
+    text-align:center;
+}
+
+.oneid-api-ready {
+  display:none;
+}
+
+.oneid-only {
+  display:none;
+}
+
+.oneid-forgotpassword-block {
+  margin: 0;
+  padding: 5px 0 7px;
+/*  text-align: right;*/
+  width: 620px;
+  font-size: 12px;
+  background: #DEDEDE url(../images/bkg_nav.gif) 0 0 no-repeat;
+}
+
+.oneid-successpage-block {
+  margin: 0;
+  padding: 5px 0 7px;
+/*  text-align: right;*/
+  font-size: 12px;
+  background: #DEDEDE url(../images/bkg_nav.gif) 0 0 no-repeat;
+}
+
+.oneid-forgotpassword-block p{
+  font-weight: bold;
+  margin-left : 5px;
+  margin-right : 5px;
+}
+
+.oneid-forgot-password-login-ctr {
+  margin: 0;
+  padding: 5px 0 7px;
+  text-align: right;
+  width: 620px;
+  font-size: 12px;
+}

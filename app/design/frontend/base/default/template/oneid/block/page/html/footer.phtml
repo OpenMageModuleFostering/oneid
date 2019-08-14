@@ -1,0 +1,104 @@
+
+<script type="text/javascript">
+  OneIdExtern.registerApiReadyFunction(function(){ 
+    /*
+     * Magento -> OneId attribute mapping functions
+     */
+    var state_map = {
+      AL:1,
+      AK:2,
+      AS:3,
+      AZ:4,
+      AR:5,
+      AA:7,
+      AE:9,
+      AP:11,
+      CA:12,
+      CO:13,
+      CT:14,
+      DE:15,
+      DC:16,
+      FL:18,
+      GA:19,
+      GU:20,
+      HI:21,
+      ID:22,
+      IL:23,
+      IN:24,
+      IA:25,
+      KS:26,
+      LY:27,
+      LA:28,
+      ME:29,
+      MD:31,
+      MA:32,
+      MI:33,
+      MN:34,
+      MS:35,
+      MO:36,
+      MT:37,
+      NE:38,
+      NV:39,
+      NH:40,
+      NJ:41,
+      NM:42,
+      NY:43,
+      NC:44,
+      ND:45,
+      MP:46,
+      OH:47,
+      OK:48,
+      OR:49,
+      PA:51,
+      PR:52,
+      RI:53,
+      SC:54,
+      SD:55,
+      TN:56,
+      TX:57,
+      UT:58,
+      VT:59,
+      VI:60,
+      VA:61,
+      WA:62,
+      WV:63,
+      WI:64,
+      WY:65
+    }
+    
+    OneIdUtil.registerAttributeMappingFunction("address[billing][state]", false, function(state_val){
+      return state_map[state_val];
+    });
+    
+    OneIdUtil.registerAttributeMappingFunction("address[billing][state]", true, function(state_val){
+      for (state in state_map){
+        if (state_map[state] == state_val) {
+          return state;
+        }
+      }
+      return "";
+    });
+    
+    OneIdUtil.registerAttributeMappingFunction("address[shipping][state]", false, function(state_val){
+      return state_map[state_val];
+    });
+    
+    OneIdUtil.registerAttributeMappingFunction("address[shipping][state]", true, function(state_val){
+      for (state in state_map){
+        if (state_map[state] == state_val) {
+          return state;
+        }
+      }
+      return "";
+    });
+    
+    // Show any items that require the API to be ready, but not that oneid be enabled.
+    OneId.$(".oneid-api-ready:not(.oneid-only)").show();
+    
+    OneId.isUserEnabled(function(enabled){
+      if (enabled){
+        OneId.$(".oneid-only").show();
+      } 
+    }); 
+  });
+ </script>

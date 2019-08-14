@@ -1,0 +1,8 @@
+<script src="<?php echo $this->helper('OneID')->getEndpoint() ?>/form/form.js"></script>
+<script src="<?php echo $this->helper('OneID')->getEndpoint() ?>/js/includeexternal.js" type="text/javascript"></script>
+<script type="text/javascript">
+    // Init oneID
+    OneId.init({
+       repoHost :  "<?php echo $this->helper('OneID')->getEndpoint() ?>"
+    });
+</script>

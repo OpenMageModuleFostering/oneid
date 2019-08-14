@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+    <modules>
+        <OneID_Connector>
+            <active>true</active>
+            <codePool>local</codePool>
+        </OneID_Connector>
+    </modules>
+</config>

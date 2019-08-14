@@ -1,0 +1,162 @@
+<?php
+/**
+ * Magento Enterprise Edition
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Magento Enterprise Edition License
+ * that is bundled with this package in the file LICENSE_EE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.magentocommerce.com/license/enterprise-edition
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     enterprise_default
+ * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://www.magentocommerce.com/license/enterprise-edition
+ */
+?>
+<div class="opc-wrapper">
+    <div class="page-title">
+        <?php echo $this->getChildHtml('checkoutCallout') ?>
+        <h1><?php echo $this->__('Checkout') ?></h1>
+    </div>
+    <script type="text/javascript" src="<?php echo $this->getJsUrl('varien/accordion.js') ?>"></script>
+    <script type="text/javascript" src="<?php echo $this->getSkinUrl('js/opcheckout.js') ?>"></script>
+    <script type="text/javascript">countryRegions = <?php echo $this->helper('directory')->getRegionJson() ?></script>
+    <div class="opc-progress-container" id="col-right-opcheckout">
+        <?php echo $this->getChildHtml('checkoutProgress') ?>
+    </div>
+    <ol class="opc" id="checkoutSteps">
+    <?php $i=0; foreach($this->getSteps() as $_stepId => $_stepInfo): ?>
+    <?php if (!$this->getChild($_stepId) || !$this->getChild($_stepId)->isShow()): continue; endif; $i++ ?>
+        <li id="opc-<?php echo $_stepId ?>" class="section<?php echo !empty($_stepInfo['allow'])?' allow':'' ?><?php echo !empty($_stepInfo['complete'])?' saved':'' ?>">
+            <div class="step-title">
+                <span class="number"><?php echo $i ?></span>
+                <h2><?php echo $_stepInfo['label'] ?></h2>
+                <!--<a href="#"><?php echo $this->__('Edit') ?></a>-->
+            </div>
+            <div id="checkout-step-<?php echo $_stepId ?>" class="step a-item" style="display:none;">
+                <?php echo $this->getChildHtml($_stepId) ?>
+            </div>
+        </li>
+    <?php endforeach ?>
+    </ol>
+    <script type="text/javascript">
+    //<![CDATA[
+        var accordion = new Accordion('checkoutSteps', '.step-title', true);
+        <?php if($this->getActiveStep()): ?>
+        accordion.openSection('opc-<?php echo $this->getActiveStep() ?>');
+        <?php endif ?>
+        var checkout = new Checkout(accordion,{
+            progress: '<?php echo $this->getUrl('checkout/onepage/progress') ?>',
+            review: '<?php echo $this->getUrl('checkout/onepage/review') ?>',
+            saveMethod: '<?php echo $this->getUrl('checkout/onepage/saveMethod') ?>',
+            failure: '<?php echo $this->getUrl('checkout/cart') ?>'}
+        );
+    //]]>
+    </script>
+    
+    
+    <script type="text/javascript">
+      
+      <?php 
+          $args = Mage::app()->getRequest()->getParams();
+          $_quote = Mage::getModel('checkout/cart')->getQuote();
+      ?>
+      OneIdExtern.registerApiReadyFunction(function(){
+        OneId.automateFormFill = "<?php echo $args["autoFill"] ? true : false ?>"
+        OneId.isUserEnabled(function(isEnabled){
+          if (OneId.automateFormFill && isEnabled){
+            OneId.$("#opc-login").hide();
+            OneId.$("#opc-billing").hide();
+            OneId.$("#opc-shipping").hide();
+            OneId.$("#opc-payment").hide();
+            OneId.$("#oneid-checkout-please-wait").show();
+
+
+            OneId.$("#login\\:guest").click();
+            OneId.$("#p_method_ccsave").click();
+
+            OneId.$("#register-xcustomer-password").hide();
+            OneId.$("#billing\\:customer_password").removeClass("required-entry");
+            OneId.$("#billing\\:confirm_password").removeClass("required-entry");          
+            OneId.$("#checkout-step-review").show();
+
+            startBillingAddressFormFill();
+          }
+        });
+      });
+      
+    var oneIDSaveAttributes = function() {
+        var data = {};
+        // Elements that were missing from oneID will have this CSS class attached.
+        var missing_fields = $$(".oneid-attr-missing");
+        
+        
+        if (missing_fields.length) {
+            for (var i=0; i < missing_fields.length; i++) {
+                var missing_field = missing_fields[i];
+                var oneidAttr = null;
+                var missing_field_id = missing_field.id;
+                // Need to go through the JSON blobs defining the forms to get
+                // the form_id -> oneid_attribute mapping.
+                if (billingAddressPostData["formData"][missing_field_id]) {
+                    oneidAttr = billingAddressPostData["formData"][missing_field_id]["oneid_attribute"];  
+                }
+                else if (shippingAddressPostData["formData"][missing_field_id]){
+                    oneidAttr = shippingAddressPostData["formData"][missing_field_id]["oneid_attribute"];  
+                }
+                else if (paymentPostData["formData"][missing_field_id]) {
+                    oneidAttr = paymentPostData["formData"][missing_field_id]["oneid_attribute"];
+                }
+                
+                if (oneidAttr) {
+                    data[oneidAttr] = missing_field.value;
+                }
+                
+            }
+            
+            // Call the external setuserattributes, which proxies to server.
+            OneId.setUserAttributes(data, function(status){
+                oneidAuthorizePurchase(); 
+            });
+        }
+        else {
+            oneidAuthorizePurchase(); 
+        }
+    };
+    var oneidAuthorizePurchase = function() {
+        OneId.isUserLoggedIn(function(isLoggedIn){
+            if (isLoggedIn){
+                OneId.authSecuredTransaction({'auth_message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
+                    'amount' : '<?php echo $_quote->getGrandTotal() ?>',
+                    'challenge' : <?php echo Mage::helper("OneID")->getChalj('secureTransaction', $_quote) ?>
+                }, 
+                function(data) {
+                    if (!data) {
+                        return;
+                    }
+                    $("oneIDPurchaseAuthData").value = JSON.stringify(data);
+                    review.save();
+                });
+            }
+            
+            else{
+                review.save();
+            }
+        });
+    };
+    </script>
+    
+    
+    
+</div>

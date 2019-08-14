@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/OneID",
+    "type": "magento-module",
+    "license": "Apache-Software-License-(ASL)",
+    "homepage": "",
+    "description": "Allow your customers to use their OneID account to easily sign in, and check out at your store.",
+    "authors": [
+    {
+        "name": "OneID",
+        "email": "bpk@oneid.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}
