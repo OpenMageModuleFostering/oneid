@@ -3,7 +3,7 @@
 <config>
     <modules>
         <OneID_Connector>
-            <version>0.1.0</version>
+            <version>1.0.0</version>
         </OneID_Connector>
     </modules>
     <global>
