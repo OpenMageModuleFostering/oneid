@@ -202,7 +202,7 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
     
     OneIdExtern.registerApiReadyFunction(function(){
         // insert buttons
-        var loginCtr = '<div class="oneid-only" style="margin-top:25px;"><div id="oneid-checkout-login-form" class="oneid-only oneid-login-container" style="" ></div></div>';
+        var loginCtr = '<div class="oneid-only oneid-checkout-signin-container" style="margin-top:25px;"><div id="oneid-checkout-login-form" class="oneid-only oneid-login-container" style="" ></div></div>';
         OneId.$(loginCtr).insertAfter("#checkout-step-login .col-2 .buttons-set .button");
         
         // billing
@@ -449,6 +449,7 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
 
                     OneId.$("#login\\:guest").click();
                     OneId.$("#p_method_ccsave").click();
+                    OneId.$("#p_method_authorizenet").click();
                     OneId.$("#billing\\:use_for_shipping_yes").click();
 
                     OneId.$("#register-xcustomer-password").hide();
@@ -477,11 +478,10 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
                             if (response.payment_methods_html) {
                                 $('checkout-payment-method-load').update(response.payment_methods_html);
                             }
-                            
+                            recoverFromFailedOneidCheckout();
                             if (isFormFilledOut(paymentPostData.formData) && !OneId.$("#ccsave_cc_cid,#authorizenet_cc_cid").length){
                                 checkout.loadWaiting=false;
-                                payment.save();
-                                recoverFromFailedOneidCheckout();
+                                payment.save();   
                             }
                             else{
                                 checkout.setShippingMethod();
