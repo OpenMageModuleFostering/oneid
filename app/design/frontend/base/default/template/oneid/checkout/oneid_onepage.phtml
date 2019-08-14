@@ -1,6 +1,9 @@
+<?php if (Mage::helper("OneID")->isBrowserOneIdSupported()) : ?>
+
 <?php
 $args = Mage::app()->getRequest()->getParams();
 $_quote = Mage::getModel('checkout/cart')->getQuote();
+$doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
 ?>
 
 <span class="please-wait" id="oneid-checkout-please-wait" style="display:none;">
@@ -66,40 +69,59 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
             
                 // Call the external setuserattributes, which proxies to server.
                 OneId.setUserAttributes(data, function(status){
-                    oneidAuthorizePurchase(); 
+                    oneidAuthorizePurchase();
                 });
             }
             else {
-                oneidAuthorizePurchase(); 
+                oneidAuthorizePurchase();
             }
         };
-        var oneidAuthorizePurchase = function() {
-            OneId.isUserLoggedIn(function(isLoggedIn){
-                if (isLoggedIn){
-                    OneId.authSecuredTransaction({'auth_message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
-                        'amount' : '<?php echo $_quote->getGrandTotal() ?>',
-                        'challenge' : <?php echo Mage::helper("OneID")->getChalj('secureTransaction', $_quote) ?>
-                    }, 
-                    function(data) {
-                        if (!data) {
-                            return;
-                        }
-                        if (!OneId.$("#oneIdPurchaseAuthData").length){
-                            OneId.$('<input id="oneIDPurchaseAuthData" type="hidden" name="oneIDPurchaseAuthData" />').appendTo("#co-payment-form");
-                        }
-                        
-                        
-                        $("oneIDPurchaseAuthData").value = OneIdJSON.stringify(data);
-                        review.save();
-                    });
-                }
+     
+      var oneidAuthorizePurchase = function() {
             
-                else{
-                    review.save();
+            var doApprovalCheck = <?php if ($doCheck) {
+                    echo 1;
+                } else {
+                    echo 0;
                 }
-            });
+            ?>;
+            if (doApprovalCheck){
+                OneId.isUserLoggedIn(function(isLoggedIn){
+                    if (isLoggedIn){
+                        OneId.authSecuredTransaction({
+                            'message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
+                            'amount' : '<?php echo $_quote->getGrandTotal() ?>',
+                            'challenge' : {}
+                        }, 
+                        function(data) {
+                            if (!data){
+                                return;
+                            }
+                            else if (!data.confirm) {
+                                alert(data.error);
+                            }
+                            else {
+                                if (!OneId.$("#oneIdPurchaseAuthData").length){
+                                    OneId.$('<input id="oneIDPurchaseAuthData" type="hidden" name="oneIDPurchaseAuthData" />').appendTo("#co-payment-form");
+                                }
+
+                                $("oneIDPurchaseAuthData").value = OneIdJSON.stringify(data);
+                                review.save();
+                            }
+                        });
+                    }
+
+                    else{
+                        review.save();
+                    }
+                });
+            }
+            else{
+                review.save();
+            }
         };
         
+    
         var paymentPostData = { 
             "formData" : {
                 "[name='payment[cc_owner]']" : {
@@ -516,3 +538,5 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
         
     });
 </script>
+
+<?php endif; ?>
