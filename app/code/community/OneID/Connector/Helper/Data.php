@@ -16,6 +16,8 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
     
     const REFERRAL_CODE = "magerefcode"; // prob need to toss this into magento admin
     
+    const MIN_IE_VERSION = 9.0;
+    
     public function getButton($container_class="") {
         $button = '<div class="'.$container_class.' oneid-api-ready"><img class="oneidlogin" style="margin-left:6px; margin-top:-4px" 
             return_to="'. $this->_getUrl("/") .'" 
@@ -46,6 +48,23 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
             src="' . $this->getEndPoint() . '/images/oneid_signin.png" 
             onclick="OneId.createOneId(\''.$email.'\', \''.$this->getReferralCode().'\')" /></div>';
         return $button;
+    }
+    
+    public function isBrowserOneIdSupported(){
+        $supported = true;
+        $ua = strtolower($_SERVER['HTTP_USER_AGENT']);
+        
+        
+        if (preg_match("#(msie)[/ ]?([0-9.]*)#", $ua, $match)) 
+        { 
+            $name = $match[1] ; 
+            $version = (float)$match[2];
+            $supported = $version >= self::MIN_IE_VERSION;
+             
+        } 
+        
+        return $supported;
+        
     }
     
     public function getCreateOneIdAttrs() {
