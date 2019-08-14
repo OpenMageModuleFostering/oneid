@@ -295,8 +295,10 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
         var isFormFilledOut = function(formData){
             for(key in formData){
                 var selector = OneId.$("#"+escapeSelector(key));
-                if (selector.length && !selector.val() && formData[key].required){
-                    return false;
+                if (typeof formData[key].required == "undefined" || formData[key].required == true){
+                    if (selector.length && !selector.val()){
+                        return false;
+                    }
                 }
             }
             
