@@ -96,6 +96,105 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
             });
         };
         
+        var paymentPostData = { 
+            "formData" : {
+                "ccsave_cc_owner" : {
+                    "oneid_attribute" : "payment[cc_name_on_card]",
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_cc_type" : {
+                    "oneid_attribute" : "payment[cc_type]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_cc_number" : {
+                    "oneid_attribute" : "payment[cc_number]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_expiration" : {
+                    "oneid_attribute" : "payment[cc_exp_mo]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "format" : ""
+                },
+                "ccsave_expiration_yr" : {
+                    "oneid_attribute" : "payment[cc_exp_yr]", 
+                    "oneid_class" : "",
+                    "scope" : "oneID",
+                    "selector_type" : "base",
+                    "format" : ""
+                }
+            }
+        }; 
+        
+        var billingAddressPostData = { 
+            "formData" : {
+                "billing:firstname" : {
+                    "oneid_attribute" : ["personal_info[first_name]"]
+                },
+                "billing:lastname" : {
+                    "oneid_attribute" : ["personal_info[last_name]"]
+                  
+                },
+                "billing:email" :{
+                    "oneid_attribute" : ["personal_info[email]"]
+                },
+                "billing:street1" :{
+                    "oneid_attribute" : "address[billing][street]" 
+                },
+                "billing:street2" :{
+                    "oneid_attribute" : "address[billing][street2]", 
+                    "required" : false
+                },
+                "billing:telephone" :{
+                    "oneid_attribute" : "address[billing][phone]" 
+                },
+                "billing:region_id" :{
+                    "oneid_attribute" : "address[billing][state]"
+                },
+                "billing:city" : {
+                    "oneid_attribute" : "address[billing][city]" 
+                },
+                "billing:postcode" : {
+                    "oneid_attribute" : "address[billing][zip]" 
+                }
+            }
+        };
+        
+        var shippingAddressPostData = { 
+            "formData" : {
+                "shipping:firstname" : {
+                    "oneid_attribute" : "personal_info[first_name]"
+                },
+                "shipping:lastname" : {
+                    "oneid_attribute" : "personal_info[last_name]"
+                },
+                "shipping:street1" :{
+                    "oneid_attribute" : "address[shipping][street]" 
+                },
+                "shipping:street2" :{
+                    "oneid_attribute" : "address[shipping][street2]",
+                    "required": false
+                },
+                "shipping:telephone" :{
+                    "oneid_attribute" : "address[shipping][phone]"
+                },
+                "shipping:region_id" :{
+                    "oneid_attribute" : "address[shipping][state]"
+                },
+                "shipping:city" : {
+                    "oneid_attribute" : "address[shipping][city]"
+                },
+                "shipping:postcode" : {
+                    "oneid_attribute" : "address[shipping][zip]"
+                }
+            }
+        }; 
     
     
     OneIdExtern.registerApiReadyFunction(function(){
@@ -162,41 +261,7 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
             $("checkout-step-payment").show();
         }
       
-        var paymentPostData = { 
-            "formData" : {
-                "ccsave_cc_owner" : {
-                    "oneid_attribute" : "payment[cc_name_on_card]",
-                    "oneid_class" : "",
-                    "scope" : "oneID",
-                    "format" : ""
-                },
-                "ccsave_cc_type" : {
-                    "oneid_attribute" : "payment[cc_type]", 
-                    "oneid_class" : "",
-                    "scope" : "oneID",
-                    "format" : ""
-                },
-                "ccsave_cc_number" : {
-                    "oneid_attribute" : "payment[cc_number]", 
-                    "oneid_class" : "",
-                    "scope" : "oneID",
-                    "format" : ""
-                },
-                "ccsave_expiration" : {
-                    "oneid_attribute" : "payment[cc_exp_mo]", 
-                    "oneid_class" : "",
-                    "scope" : "oneID",
-                    "format" : ""
-                },
-                "ccsave_expiration_yr" : {
-                    "oneid_attribute" : "payment[cc_exp_yr]", 
-                    "oneid_class" : "",
-                    "scope" : "oneID",
-                    "selector_type" : "base",
-                    "format" : ""
-                }
-            }
-        };  
+ 
         
         OneId.accuFillButton(OneId.$(".oneid-formfill-payment"), paymentPostData, "", function(completed){
             if (!completed && automateFormFill){
@@ -271,39 +336,7 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
           
         };
     
-        var billingAddressPostData = { 
-            "formData" : {
-                "billing:firstname" : {
-                    "oneid_attribute" : ["personal_info[first_name]"]
-                },
-                "billing:lastname" : {
-                    "oneid_attribute" : ["personal_info[last_name]"]
-                  
-                },
-                "billing:email" :{
-                    "oneid_attribute" : ["personal_info[email]"]
-                },
-                "billing:street1" :{
-                    "oneid_attribute" : "address[billing][street]" 
-                },
-                "billing:street2" :{
-                    "oneid_attribute" : "address[billing][street2]", 
-                    "required" : false
-                },
-                "billing:telephone" :{
-                    "oneid_attribute" : "address[billing][phone]" 
-                },
-                "billing:region_id" :{
-                    "oneid_attribute" : "address[billing][state]"
-                },
-                "billing:city" : {
-                    "oneid_attribute" : "address[billing][city]" 
-                },
-                "billing:postcode" : {
-                    "oneid_attribute" : "address[billing][zip]" 
-                }
-            }
-        };
+
         
         var oneidBillingNextStep = function() {
             OneId.isUserEnabled( function (isEnabled) {
@@ -349,35 +382,7 @@ $_quote = Mage::getModel('checkout/cart')->getQuote();
             $("opc-shipping").show();
         }
        
-        var shippingAddressPostData = { 
-            "formData" : {
-                "shipping:firstname" : {
-                    "oneid_attribute" : "personal_info[first_name]"
-                },
-                "shipping:lastname" : {
-                    "oneid_attribute" : "personal_info[last_name]"
-                },
-                "shipping:street1" :{
-                    "oneid_attribute" : "address[shipping][street]" 
-                },
-                "shipping:street2" :{
-                    "oneid_attribute" : "address[shipping][street2]",
-                    "required": false
-                },
-                "shipping:telephone" :{
-                    "oneid_attribute" : "address[shipping][phone]"
-                },
-                "shipping:region_id" :{
-                    "oneid_attribute" : "address[shipping][state]"
-                },
-                "shipping:city" : {
-                    "oneid_attribute" : "address[shipping][city]"
-                },
-                "shipping:postcode" : {
-                    "oneid_attribute" : "address[shipping][zip]"
-                }
-            }
-        };  
+ 
         
         var startShippingAddressFormFill = function() {
             var attr = "<?php echo $this->helper('OneID')->getCheckoutAttr() ?>";
