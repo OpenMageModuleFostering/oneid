@@ -18,10 +18,10 @@
 .oneid-api-ready {
   display:none;
 }
-
+/*
 .oneid-only {
   display:none;
-}
+}*/
 
 .oneid-forgotpassword-block {
   margin: 0;
@@ -37,7 +37,7 @@
   padding: 5px 0 7px;
 /*  text-align: right;*/
   font-size: 12px;
-  background: #DEDEDE url(../images/bkg_nav.gif) 0 0 no-repeat;
+/*  background: #DEDEDE url(../images/bkg_nav.gif) 0 0 no-repeat;*/
 }
 
 .oneid-forgotpassword-block p{

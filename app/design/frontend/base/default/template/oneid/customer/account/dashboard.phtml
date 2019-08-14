@@ -22,13 +22,10 @@
                     <p><?php echo $this->__('Tired of remembering your username and password? Use OneID to quickly and safely sign into this website next time. It’s free!') ?></p> 
                     <div id="oneid-link-your-oneid"></div>
                     <script type="text/javascript">
-                        OneIdExtern.registerApiReadyFunction(function(){
-                            OneId.loginButton(OneId.$("#oneid-link-your-oneid"), 
-                                { 
-                                    "oneid_user_link" : true,
-                                    "user_data" : <?php echo $this->helper("OneID")->getCreateOneIdAttrs() ?>,
-                                    "challenge" : <?php echo $this->helper("OneID")->getLinkCHALJ() ?> 
-                                });
+                        OneId.loginButton("#oneid-link-your-oneid",{ 
+                                "oneid_user_link" : true,
+                                "user_data" : <?php echo $this->helper("OneID")->getCreateOneIdAttrs() ?>,
+                                "challenge" : <?php echo $this->helper("OneID")->getLinkCHALJ() ?> 
                         });
                     </script>
                     </div>
@@ -38,8 +35,13 @@
                 </p>
                 <br/>
                 <a href='<?php echo Mage::getUrl("oneid/connector/removeOneid/")?>'>
-                    <img src="<?php echo $this->helper("OneID")->getEndPoint()?>/images/oneid_unlink.png"/>
-                </a>
+                    <img id="oneid_unlink" src="<?php echo $this->helper("OneID")->getEndPoint()?>/images/oneid_unlink@2x.png" style="width:136px; height:24px;"/>
+                </a>    
+                <script type="text/javascript">
+                    OneIdExtern.registerApiReadyFunction(function(){
+                        OneIdUtil.imageHighlight("#oneid_unlink");
+                    });
+                </script>
                 
                 <?php endif; ?>
             </div>

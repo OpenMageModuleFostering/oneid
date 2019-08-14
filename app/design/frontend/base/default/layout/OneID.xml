@@ -31,7 +31,9 @@
         </reference>
 
         <reference name="content">
+
             <reference name="customer_form_login">
+                <block type="OneID/signin" name="oneid_signin_button" template="oneid/oneid/signin.phtml"></block>
                 <reference name="form.additional.info">
                     <block type="OneID/signin" name="oneid_signin_button" template="oneid/oneid/signin.phtml"></block>
                 </reference>
@@ -78,7 +80,7 @@
         </reference>
     </customer_account_edit>
     
-    <customer_account_forgotpassword>
+<!--    <customer_account_forgotpassword>
       <reference name="head">
           <action method="addCss"><name>css/oneid.css</name></action>
       </reference>
@@ -87,32 +89,14 @@
               <action method="setTemplate"><template>oneid/customer/form/forgotpassword.phtml</template></action>
             </reference>
         </reference>
-    </customer_account_forgotpassword>
+    </customer_account_forgotpassword>-->
     
     <checkout_onepage_index translate="label">
       <reference name="head">
           <action method="addCss"><name>css/oneid.css</name></action>
       </reference>
       <reference name="content">
-        <reference name="checkout.onepage">
-            <action method="setTemplate"><template>oneid/checkout/onepage.phtml</template></action>
-        </reference>
-        <reference name="checkout.onepage.login">
-            <action method="setTemplate"><template>oneid/checkout/onepage/login.phtml</template></action>
-        </reference>
-         
-        <reference name="checkout.onepage.billing">
-            <action method="setTemplate"><template>oneid/checkout/onepage/billing.phtml</template></action>
-        </reference>
-        <reference name="checkout.onepage.shipping">
-            <action method="setTemplate"><template>oneid/checkout/onepage/shipping.phtml</template></action>
-        </reference>
-        <reference name="checkout.onepage.payment">
-            <action method="setTemplate"><template>oneid/checkout/onepage/payment.phtml</template></action>
-        </reference>
-<!--        <reference name="checkout.onepage.review">
-            <action method="setTemplate"><template>oneid/checkout/onepage/review.phtml</template></action>
-        </reference>-->
+        <block type="core/template" name="oneid_onepage" template="oneid/checkout/oneid_onepage.phtml"></block>
       </reference>
     </checkout_onepage_index>
     
@@ -130,7 +114,7 @@
       </reference>
         <reference name="content">
           <reference name="checkout.success">
-              <action method="setTemplate"><template>oneid/checkout/success.phtml</template></action>
+              <block type="core/template" name="oneid_provision" template="oneid/checkout/success/oneid_create.phtml"></block>
           </reference>
         </reference>
     </checkout_onepage_success>

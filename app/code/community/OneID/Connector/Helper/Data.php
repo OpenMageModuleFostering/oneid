@@ -51,10 +51,12 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
     public function getCreateOneIdAttrs() {
         $customer =   Mage::getSingleton('customer/session')->getCustomer();
         $data = array(
-            "personal_info" => array(
-              "first_name" => $this->_escapeQuote($customer->getFirstname()),
-              "last_name"  => $this->_escapeQuote($customer->getLastname()),
-              "email" => $this->_escapeQuote($customer->getEmail())
+            "name" => array(
+                "first_name" => $this->_escapeQuote($customer->getFirstname()),
+                "last_name" => $this->_escapeQuote($customer->getLastname())
+            ),
+            "email" => array(
+                "email" => $this->_escapeQuote($customer->getEmail())
             )
         );
         
@@ -63,31 +65,15 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
         if ($customerAddressId){
                $address = Mage::getModel('customer/address')->load($customerAddressId);
                $street = $address->getStreet();
-               $data["address"] = array("billing" => array());
-               $data["address"]["billing"]["street"] = $this->_escapeQuote( $street[0]);
-               $data["address"]["billing"]["street2"] = count($street) == 2 ? $this->_escapeQuote($street[1]) : "";
-               $data["address"]["billing"]["state"] = $address->getRegionId();
-               $data["address"]["billing"]["city"] = $this->_escapeQuote($address->getCity());
-               $data["address"]["billing"]["zip"] = $address->getPostcode();
-               $data["address"]["billing"]["phone"] = $address->getTelephone();
-        }
-        
-        $customerAddressId = Mage::getSingleton('customer/session')->getCustomer()->getDefaultShipping();
-        if ($customerAddressId){
-               $address = Mage::getModel('customer/address')->load($customerAddressId);
-               
-               if (!$data["address"]) {
-                    $data["address"] = array();
-               }
-        
-               $street = $address->getStreet();
-               $data["address"]["shipping"] = array();
-               $data["address"]["shipping"]["street"] = $this->_escapeQuote( $street[0]);
-               $data["address"]["shipping"]["street2"] = count($street) == 2 ? $this->_escapeQuote($street[1]) : "";
-               $data["address"]["shipping"]["state"] = $address->getRegionId();
-               $data["address"]["shipping"]["city"] = $this->_escapeQuote($address->getCity());
-               $data["address"]["shipping"]["zip"] = $address->getPostcode();
-               $data["address"]["shipping"]["phone"] = $address->getTelephone();
+               $data["address"] = array(
+                        "street" => $this->_escapeQuote( $street[0]),
+                        "street2" => count($street) == 2 ? $this->_escapeQuote($street[1]) : "",
+                        "state" => $address->getRegionId(),
+                        "city" => $this->_escapeQuote($address->getCity()),
+                        "zip" => $address->getPostcode(),
+                        "phone" => $address->getTelephone()
+               );
+
         }
         
         $orders = Mage::getResourceModel('sales/order_collection')
@@ -114,8 +100,6 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
           }
         }
         
-        
-        
         return json_encode($data);
     }
     
@@ -135,57 +119,41 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
     
     public function getCreateOneIdAttrsFromOrder($order) {
         $data = array(
-            "personal_info" => array(
+            "name" => array(
                 "first_name" => $this->_escapeQuote($order->getCustomerFirstname()),
-                "last_name" => $this->_escapeQuote($order->getCustomerLastname()),
+                "last_name" => $this->_escapeQuote($order->getCustomerLastname())
+            ),
+            "email" => array(
                 "email" => $this->_escapeQuote($order->getCustomerEmail())
             )
         );
-      
-      $address = $order->getBillingAddress();
-      
-      $data["address"] = array("billing" => array());
-      
-      $street = $address->getStreet();
-      $data["address"]["billing"]["street"] = $this->_escapeQuote( $street[0]);
-      $data["address"]["billing"]["street2"] = count($street) == 2 ?  $this->_escapeQuote($street[1]) : "";
-      $data["address"]["billing"]["state"] = $address->getRegionId();
-      $data["address"]["billing"]["city"] = $this->_escapeQuote($address->getCity());
-      $data["address"]["billing"]["zip"] = $address->getPostcode();
-      $data["address"]["billing"]["phone"] = $address->getTelephone();
-      $data["personal_info"]["primary_phone"] = $address->getTelephone();
-      
-      $address = $order->getShippingAddress();    
-      if ($address) {
-        if (!$data["address"]){
-            $data["address"] = array();
-        }
-        $data["address"]["shipping"] = array();
 
-          
+        $address = $order->getBillingAddress();
+
+        $data["address"] = array();
         $street = $address->getStreet();
-        $data["address"]["shipping"]["street"] = $this->_escapeQuote( $street[0]);
-        $data["address"]["shipping"]["street2"] = count($street) == 2 ?  $this->_escapeQuote($street[1]) : "";
-        $data["address"]["shipping"]["state"] = $address->getRegionId();
-        $data["address"]["shipping"]["city"] = $this->_escapeQuote($address->getCity());
-        $data["address"]["shipping"]["zip"] = $address->getPostcode();
-        $data["address"]["shipping"]["phone"] = $address->getTelephone();
-      }
-      
-      
-      // Payment info
-      $data["payment"] = array();
-      $payment = $order->getPayment();
-      $payment_info = $payment->getMethodInstance()->getInfoInstance();
-      $data["payment"]["cc_type"] = $payment_info->getCcType();
-      $data["payment"]["cc_number"] = $payment_info->getCcNumber();
-      $data["payment"]["cc_exp_mo"] = $payment_info->getCcExpMonth();
-      $data["payment"]["cc_exp_yr"] = $payment_info->getCcExpYear();
-      $data["payment"]["cc_name_on_card"] = $this->_escapeQuote($payment_info->getCcOwner());
-      
-      
-      return json_encode($data);
-      
+        $data["address"] = array(
+                "street" => $this->_escapeQuote($street[0]),
+                "street2" => count($street) == 2 ? $this->_escapeQuote($street[1]) : "",
+                "state" => $address->getRegionId(),
+                "city" => $this->_escapeQuote($address->getCity()),
+                "zip" => $address->getPostcode(),
+                "phone" => $address->getTelephone()
+        );
+
+
+        // Payment info
+        $data["payment"] = array();
+        $payment = $order->getPayment();
+        $payment_info = $payment->getMethodInstance()->getInfoInstance();
+        $data["payment"]["cc_type"] = $payment_info->getCcType();
+        $data["payment"]["cc_number"] = $payment_info->getCcNumber();
+        $data["payment"]["cc_exp_mo"] = $payment_info->getCcExpMonth();
+        $data["payment"]["cc_exp_yr"] = $payment_info->getCcExpYear();
+        $data["payment"]["cc_name_on_card"] = $this->_escapeQuote($payment_info->getCcOwner());
+
+
+        return json_encode($data);
     }   
     
     private function _escapeQuote($str){
@@ -220,7 +188,7 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
     }
     
     public function getLoginATTR(){
-        return "personal_info[email] personal_info[first_name] personal_info[last_name]";
+        return "email[email] name[first_name] name[last_name]";
     }
     
     private function getReferralCode(){
@@ -262,7 +230,7 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
     }
     
     public function getCheckoutAttr(){
-        return "personal_info[email] personal_info[first_name] personal_info[last_name] address.billing[street] address.billing[street2] address.billing[city] address.billing[state] address.billing[zip] address.billing[phone] payment[cc_type] payment[cc_number] payment[cc_exp_mo] payment[cc_exp_yr] payment[cc_verify] payment[cc_name_on_card]";
+        return "email[email] name[first_name] name[last_name] address[street] address[street2] address[city] address[state] address[zip] address[phone] payment[cc_type] payment[cc_number] payment[cc_exp_mo] payment[cc_exp_yr] payment[cc_verify] payment[cc_name_on_card]";
     }
     
     public function getChalj($method=null, $quote=null) {
@@ -367,8 +335,13 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
           $isValid = $isValid && $claimValid;
           
           if (!$claimValid) {
-            $response["error"].= " ";
-            $response["error"].= "Claim for attribute " . $attr ." didn't verify";
+            if ($attr == "email"){
+                $response["error"]= "Sorry, your email address must be verified by OneID. Please visit your control panel.";
+            }
+            else{
+                $response["error"]= "Sorry, we could not verify " . $attr;
+            }
+            break;
           }
         }
         $response["isValid"] = $isValid;

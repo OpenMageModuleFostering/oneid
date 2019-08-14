@@ -75,20 +75,14 @@ class OneID_Connector_ConnectorController extends Mage_Core_Controller_Front_Act
                 }
             }
             else {
-                
-                // This is same as email for now
-        
-                $infoCard = $decoded["attr"]["personal_info"];
-
-                //TODO: don't assume default card here.
-                $email = $infoCard['email'];
+                $email = $decoded["attr"]['email']["email"];
 
                 if (!$email){
-                $url = $this->_getLoginPostRedirect();
-                $msg = "Sorry, a verified email address supplied by OneID is required to login!";
-                $response = array("error" => $msg, "errorcode" => "-999");
-                Mage::app()->getResponse()->setBody(json_encode($response));
-                return;
+                    $url = $this->_getLoginPostRedirect();
+                    $msg = "Sorry, a verified email address supplied by OneID is required to login!";
+                    $response = array("error" => $msg, "errorcode" => "-999");
+                    Mage::app()->getResponse()->setBody(json_encode($response));
+                    return;
                 }
 
 
@@ -99,19 +93,19 @@ class OneID_Connector_ConnectorController extends Mage_Core_Controller_Front_Act
                 if ($customer && $customer->getId()) { // User exists and is linked by OneID.
                     
                    if (!$customer->getId()) { // If customer does not exist, create one
-                        $customer->setData('firstname', $infoCard['first_name']);
-                        $customer->setData('lastname', $infoCard['last_name']);
+                        $customer->setData('firstname', $decoded["attr"]["name"]['first_name']);
+                        $customer->setData('lastname',  $decoded["attr"]["name"]['last_name']);
                         $customer->setData('email', $email);
                         $customer->setData("oneid_uid", $uid);
                         $customer->save();
                     }
                     $saveAcct=false;
                     if (!$customer->getFirstname()) {
-                        $customer->setData('firstname', $infoCard['first_name']);
+                        $customer->setData('firstname', $decoded["attr"]["name"]['first_name']);
                         $saveAcct=true;
                     }
                     if (!$customer->getLastname()){
-                        $customer->setData('lastname', $infoCard['last_name']);
+                        $customer->setData('lastname', $decoded["attr"]["name"]['last_name']);
                         $saveAcct=true;
                     }
                     if (!$customer->getOneidUid()){
@@ -141,8 +135,8 @@ class OneID_Connector_ConnectorController extends Mage_Core_Controller_Front_Act
                     else{
                         // Create new account, with data provided by OneID.
                         
-                        $customer->setData('firstname', $infoCard['first_name']);
-                        $customer->setData('lastname', $infoCard['last_name']);
+                        $customer->setData('firstname', $decoded["attr"]["name"]['first_name']);
+                        $customer->setData('lastname', $decoded["attr"]["name"]['last_name']);
                         $customer->setData('email', $email);
                         $customer->setData("oneid_uid", $uid);
                         $customer->save();     

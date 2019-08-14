@@ -92,6 +92,20 @@
       return "";
     });
     
+    OneIdUtil.registerAttributeMappingFunction("address[state]", false, function(state_val){
+      return state_map[state_val];
+    });
+    
+    OneIdUtil.registerAttributeMappingFunction("address[state]", true, function(state_val){
+      for (state in state_map){
+        if (state_map[state] == state_val) {
+          return state;
+        }
+      }
+      return "";
+    });
+    
+    
     // Show any items that require the API to be ready, but not that oneid be enabled.
     OneId.$(".oneid-api-ready:not(.oneid-only)").show();
     

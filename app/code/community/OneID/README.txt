@@ -16,24 +16,27 @@ This will likely include you modifying your
 
 app/design/frontend/base/default/template/customer/form/login.phtml
 
-to render the block.
+to render the block as follows :
+<?php echo $this->getChildHtml("oneid_signin_button"); ?>
 
 ## Getting the OneID Quick Fill buttons to show up ##
 
-We built our templates based off of the 1.7 community edition. If you use this version
-and use the Magento Onepage Checkout, you should be good to go. If you've made customizations
-to your checkout, you can copy/paste the OneID blocks into your theme. The important files for Quickfill are:
+Similar to the OneID sign in button, we have written a block that will insert OneID QuickFill buttons onto the Magento OnePage checkout.
+The block is defined as follows : 
+<block type="core/template" name="oneid_onepage" template="oneid/checkout/oneid_onepage.phtml"></block>
 
-app/design/frontend/base/default/template/oneid/checkout/onepage.pthml
+We include this into the checkout_onepage_index handle in OneID.xml. If your buttons are not showing up, you may need to include this on your own.
 
-OneID signin button on guest checkout
-app/design/frontend/base/default/template/oneid/checkout/onepage/login.phtml
 
-OneID Quickfill button on billing section
-app/design/frontend/base/default/template/oneid/checkout/onepage/billing.phtml
+## Getting a Create OneID button to show on order success ##
+We've defined a block to show a Create OneID button, so that you can offer your customers a OneID after an order is placed.
+In OneID.xml:
 
-OneID Quickfill button on shipping section
-app/design/frontend/base/default/template/oneid/checkout/onepage/shipping.phtml
+<reference name="checkout.success">
+    <block type="core/template" name="oneid_provision" template="oneid/checkout/success/oneid_create.phtml"></block>
+</reference>
 
-OneId Quickfill button on payment section
-app/design/frontend/base/default/template/oneid/checkout/onepage/payment.phtml
+You can print this block out in your theme's success.phtml with the line
+<?php echo $this->getChildHtml("oneid_provision"); ?>
+
+
