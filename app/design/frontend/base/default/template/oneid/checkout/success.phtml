@@ -74,7 +74,7 @@
   OneIdExtern.registerApiReadyFunction(function(){
     OneId.isUserLoggedIn(function(loggedIn){
       if (!loggedIn){
-          var data = OneIdUtil.parseJSON('<?php echo $this->helper('OneID')->getCreateOndIdAttrsFromOrder($_order) ?>');
+          var data = OneIdUtil.parseJSON('<?php echo $this->helper('OneID')->getCreateOneIdAttrsFromOrder($_order) ?>');
           var challenge = <?php echo $this->helper("OneID")->getLoginCHALJ() ?>;
           OneId.createOneIdButton(".create_oneid_ctr", data, challenge, function(success){
               if (success){

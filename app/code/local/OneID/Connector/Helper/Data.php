@@ -133,7 +133,7 @@ class OneID_Connector_Helper_Data extends Mage_Core_Helper_Abstract {
         return json_encode($data);
     }
     
-    public function getCreateOndIdAttrsFromOrder($order) {
+    public function getCreateOneIdAttrsFromOrder($order) {
         $data = array(
             "personal_info" => array(
                 "first_name" => $this->_escapeQuote($order->getCustomerFirstname()),
