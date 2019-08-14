@@ -41,6 +41,26 @@
         </reference>
     </customer_account_login>
     
+    <checkout_cart_index translate="label">
+        <reference name="head">
+            <action method="addCss"><name>css/oneid.css</name></action>
+        </reference>
+        
+        <reference name="checkout.cart.top_methods">
+            <reference name="checkout.cart.methods.onepage">
+                <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+            </reference>
+        </reference>
+        
+        
+        <reference name="checkout.cart.methods.onepage.bottom">
+            <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+        </reference>
+        <reference name="checkout.cart.methods.onepage.top">
+            <action method="setTemplate"><template>oneid/checkout/onepage/link.phtml</template></action>
+        </reference>
+    </checkout_cart_index>
+    
     <customer_account_index translate="label">
       <reference name="my.account.wrapper">
         <reference name="customer_account_dashboard">

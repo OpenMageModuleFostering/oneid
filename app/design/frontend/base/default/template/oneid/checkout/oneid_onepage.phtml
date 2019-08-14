@@ -1,14 +1,7 @@
-<?php if (Mage::helper("OneID")->isBrowserOneIdSupported()) : ?>
-
 <?php
 $args = Mage::app()->getRequest()->getParams();
 $_quote = Mage::getModel('checkout/cart')->getQuote();
-$doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
 ?>
-
-<span class="please-wait" id="oneid-checkout-please-wait" style="display:none;">
-    <img src="<?php echo $this->getSkinUrl('images/opc-ajax-loader.gif') ?>" alt="<?php echo $this->__('OneID is filling out your form...') ?>" title="<?php echo $this->__('OneID is filling out your form...') ?>" class="v-middle" /> <?php echo $this->__('OneID is filling out your form...') ?>
-</span>
 
 <script type="text/javascript">
     var automateFormFill = <?php 
@@ -20,14 +13,14 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
         } 
         ?>;
     
-        var recoverFromFailedOneidCheckout = function(){
-            OneId.$("#opc-login").show().addClass("allow");
-            OneId.$("#opc-billing").show().addClass("allow");
-            OneId.$("#opc-shipping").show().addClass("allow");
-            OneId.$("#opc-payment").show().addClass("allow");
-            OneId.$("#opc-shipping_method").show().addClass("allow");
-            
+            var recoverFromFailedOneidCheckout = function(){
+            OneId.$("#opc-login").show();
+            OneId.$("#opc-billing").show();
+            OneId.$("#opc-shipping").show();
+            OneId.$("#opc-payment").show();
             OneId.$("#oneid-checkout-please-wait").hide();
+
+
             OneId.$("#login\\:guest").click();
             OneId.$("#p_method_ccsave").click();
 
@@ -69,59 +62,40 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
             
                 // Call the external setuserattributes, which proxies to server.
                 OneId.setUserAttributes(data, function(status){
-                    oneidAuthorizePurchase();
+                    oneidAuthorizePurchase(); 
                 });
             }
             else {
-                oneidAuthorizePurchase();
+                oneidAuthorizePurchase(); 
             }
         };
-     
-      var oneidAuthorizePurchase = function() {
-            
-            var doApprovalCheck = <?php if ($doCheck) {
-                    echo 1;
-                } else {
-                    echo 0;
-                }
-            ?>;
-            if (doApprovalCheck){
-                OneId.isUserLoggedIn(function(isLoggedIn){
-                    if (isLoggedIn){
-                        OneId.authSecuredTransaction({
-                            'message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
-                            'amount' : '<?php echo $_quote->getGrandTotal() ?>',
-                            'challenge' : {}
-                        }, 
-                        function(data) {
-                            if (!data){
-                                return;
-                            }
-                            else if (!data.confirm) {
-                                alert(data.error);
-                            }
-                            else {
-                                if (!OneId.$("#oneIdPurchaseAuthData").length){
-                                    OneId.$('<input id="oneIDPurchaseAuthData" type="hidden" name="oneIDPurchaseAuthData" />').appendTo("#co-payment-form");
-                                }
-
-                                $("oneIDPurchaseAuthData").value = OneIdJSON.stringify(data);
-                                review.save();
-                            }
-                        });
-                    }
-
-                    else{
+        var oneidAuthorizePurchase = function() {
+            OneId.isUserLoggedIn(function(isLoggedIn){
+                if (isLoggedIn){
+                    OneId.authSecuredTransaction({'auth_message' : '<?php echo Mage::helper("OneID")->getAuthPurchaseMessage($_quote) ?>',
+                        'amount' : '<?php echo $_quote->getGrandTotal() ?>',
+                        'challenge' : <?php echo Mage::helper("OneID")->getChalj('secureTransaction', $_quote) ?>
+                    }, 
+                    function(data) {
+                        if (!data) {
+                            return;
+                        }
+                        if (!OneId.$("#oneIdPurchaseAuthData").length){
+                            OneId.$('<input id="oneIDPurchaseAuthData" type="hidden" name="oneIDPurchaseAuthData" />').appendTo("#co-payment-form");
+                        }
+                        
+                        
+                        $("oneIDPurchaseAuthData").value = OneIdJSON.stringify(data);
                         review.save();
-                    }
-                });
-            }
-            else{
-                review.save();
-            }
+                    });
+                }
+            
+                else{
+                    review.save();
+                }
+            });
         };
         
-    
         var paymentPostData = { 
             "formData" : {
                 "[name='payment[cc_owner]']" : {
@@ -224,7 +198,7 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
     
     OneIdExtern.registerApiReadyFunction(function(){
         // insert buttons
-        var loginCtr = '<div class="oneid-only oneid-checkout-signin-container" style="margin-top:25px;"><div id="oneid-checkout-login-form" class="oneid-only oneid-login-container" style="" ></div></div>';
+        var loginCtr = '<div class="oneid-signin-ctr oneid-only" style="margin-top:25px;"><div id="oneid-checkout-login-form" class="oneid-only oneid-login-container" style="" ></div></div>';
         OneId.$(loginCtr).insertAfter("#checkout-step-login .col-2 .buttons-set .button");
         
         // billing
@@ -248,6 +222,17 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
         var postPaymentFillFunction = function() { 
             payment.resetLoadWaiting();
           
+            if (automateFormFill) {
+                // If we're auto form filling, need to show all the other accordian pieces.
+                payment.onSave = function(t){
+                    payment.nextStep(t);
+                    OneId.$("#oneid-checkout-please-wait").hide();
+                    OneId.$("#opc-login").addClass("allow").show();
+                    OneId.$("#opc-billing").addClass("allow").show();
+                    OneId.$("#opc-shipping").addClass("allow").show();
+                    OneId.$("#opc-payment").addClass("allow").show();
+                }
+            }
           
             if (OneId.$("#ccsave_cc_cid,#authorizenet_cc_cid").length){
                 OneId.$("#oneid-checkout-please-wait").hide();
@@ -287,54 +272,13 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
         });
   
         var billingAddressFillSuccess = function() { 
-            
-            if (automateFormFill){
-                billing._onSave = billing.onSave;                     
-                billing.onSave = function(t){
-                    var data = {};
-                    try{
-                        data = OneIdUtil.parseJSON(t.responseText);
-                        if (window.shipping){
-                            if (data.goto_section == "shipping_method"){
-                                if (data.update_section) {
-                                    $('checkout-'+data.update_section.name+'-load').update(data.update_section.html);
-                                    OneId.$("[name='shipping_method']").first().attr("checked", "checked");
-                                }
-                                delete data['update_section'];
-                                delete data['goto_section'];
-                                t.responseText = OneIdUtil.stringifyJSON(data);
-                            }
-                            billing._onSave(t);
-                            
-                            checkout.loadWaiting=false;
-                            shippingMethod.save();
-                        }
-                        else{
-                            recoverFromFailedOneidCheckout();
-                            var filledOut = isFormFilledOut(paymentPostData.formData);
-                            if (filledOut){  
-                                checkout.loadWaiting = false;
-                                payment.save();
-                            }
-                            else{
-                                checkout.gotoSection("payment");
-                            }
-                        }
-                    }
-                    catch(e){
-
-                    }
-                }
-                
-            }
-            
             OneId.$("#p_method_ccsave").click();
             OneId.$("#payment_form_ccsave").show();
             billing.save();
-//
-//            if (OneId.$("#opc-shipping_methods").length){
-//                recoverFromFailedOneidCheckout();
-//            }  
+            
+            if (OneId.$("#opc-shipping_methods").length){
+                recoverFromFailedOneidCheckout();
+            }
             
         };
       
@@ -464,15 +408,12 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
                     OneId.$("#opc-login").hide();
                     OneId.$("#opc-billing").hide();
                     OneId.$("#opc-shipping").hide();
-                    OneId.$("#opc-shipping_method").hide();
                     OneId.$("#opc-payment").hide();
                     OneId.$("#oneid-checkout-please-wait").show();
 
 
                     OneId.$("#login\\:guest").click();
                     OneId.$("#p_method_ccsave").click();
-                    OneId.$("#p_method_authorizenet").click();
-                    OneId.$("#billing\\:use_for_shipping_yes").click();
 
                     OneId.$("#register-xcustomer-password").hide();
                     OneId.$("#billing\\:customer_password").removeClass("required-entry");
@@ -495,20 +436,27 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
                                 return false;
                             }
 
+                            if (response.update_section) {
+                                $('checkout-'+response.update_section.name+'-load').update(response.update_section.html);
+                            }
+
                             payment.initWhatIsCvvListeners();
+
+
+                            OneIdForm.fill(paymentPostData, "", function(completed){
+                            });
+
+                            if (response.goto_section) {
+                                checkout.gotoSection(response.goto_section);
+                                checkout.reloadProgressBlock();
+                                return;
+                            }
 
                             if (response.payment_methods_html) {
                                 $('checkout-payment-method-load').update(response.payment_methods_html);
                             }
-                            recoverFromFailedOneidCheckout();
-                            if (isFormFilledOut(paymentPostData.formData) && !OneId.$("#ccsave_cc_cid,#authorizenet_cc_cid").length){
-                                checkout.loadWaiting=false;
-                                payment.save();   
-                            }
-                            else{
-                                checkout.setShippingMethod();
-                            }
-                            
+
+                            checkout.setShippingMethod();
                         }
                     }
                     
@@ -519,9 +467,10 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
                     
                     OneIdForm.fill(autoFillMap, "", false, function(completed){
                         
+                        recoverFromFailedOneidCheckout();
+                        
                         var filledOut = isFormFilledOut(billingAddressPostData.formData);
                         if (automateFormFill && (!completed || !filledOut)){
-                            recoverFromFailedOneidCheckout();
                             checkout.gotoSection("billing");
                         }
                         else {
@@ -538,5 +487,3 @@ $doCheck = Mage::helper("OneID")->isQuoteAuthRequired($_quote);
         
     });
 </script>
-
-<?php endif; ?>
